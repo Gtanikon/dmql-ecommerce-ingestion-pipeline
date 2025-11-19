@@ -88,6 +88,8 @@ Example check:
 ```sql
 SELECT COUNT(*) FROM customers;
 ```
+<img width="961" height="862" alt="image" src="https://github.com/user-attachments/assets/4f418344-143f-4bb6-97a8-ca31af4531f1" />
+
 
 ---
 
