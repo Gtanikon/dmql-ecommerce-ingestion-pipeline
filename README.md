@@ -88,7 +88,6 @@ Example check:
 ```sql
 SELECT COUNT(*) FROM customers;
 ```
-<img width="961" height="862" alt="image" src="https://github.com/user-attachments/assets/4f418344-143f-4bb6-97a8-ca31af4531f1" />
 
 
 ---
@@ -120,6 +119,8 @@ order_items loaded
 payments loaded
 Data ingestion completed successfully.
 ```
+<img width="951" height="338" alt="image" src="https://github.com/user-attachments/assets/e2a887c2-0957-4bd4-aec2-5e1c2ba183d8" />
+<img width="961" height="862" alt="image" src="https://github.com/user-attachments/assets/4f418344-143f-4bb6-97a8-ca31af4531f1" />
 
 ---
 
