@@ -1,36 +1,176 @@
- 📦 DMQL Phase 1 – E-Commerce Data Engineering Pipeline
+ ````md
+# DMQL Phase 3 – Application Layer (REST API)
 
-A complete data engineering pipeline built for **Phase 1 of the DMQL project**.
-This repository contains the **ERD**, **3NF Justification Report**, **SQL schema**, **docker-compose configuration**, and the **Python ingestion script** that loads cleaned Olist e-commerce data into a PostgreSQL database running inside Docker.
+A complete **Application Layer implementation** built for **Phase 3 of the DMQL project**.
+This repository extends the Phase 1 data engineering pipeline by exposing the
+PostgreSQL OLTP database through a **RESTful API built with FastAPI**.
+The entire system is fully automated and runs using **Docker Compose**.
 
+---
 
-##  Project Overview
+## Project Overview
 
-This project demonstrates a fully functional **ETL + database setup pipeline**:
+This project demonstrates a **complete end-to-end data pipeline with an API layer**:
 
 1. **Extract**
+   - Reads raw CSV files from the e-commerce dataset
 
-   * Reads raw CSV files from the Olist e-commerce dataset.
 2. **Transform**
+   - Cleans data
+   - Removes duplicates
+   - Validates timestamps and numeric fields
+   - Enforces foreign key consistency
 
-   * Cleans the data
-   * Removes duplicates
-   * Standardizes column names
-   * Validates types
 3. **Load**
+   - Inserts cleaned data into PostgreSQL using SQLAlchemy
+   - Database schema is initialized automatically using `schema.sql`
 
-   * Inserts all tables into a PostgreSQL instance running via Docker.
-   * Database is automatically initialized by `schema.sql`.
+4. **Serve (Phase 3)**
+   - Exposes data via REST API endpoints using FastAPI
+   - Supports both data retrieval (GET) and modification (POST)
+   - Provides auto-generated Swagger documentation
 
-The entire database can be recreated **using a single command**:
+The entire pipeline is executed using **one command**:
 
 ```bash
-docker compose up -d
+docker compose up --build
+````
+
+---
+
+## Project Architecture
+
+The project consists of **three Docker services**:
+
+### 1. PostgreSQL
+
+* Stores all transactional e-commerce data
+* Schema initialized automatically at startup
+
+### 2. Data Ingestion Service
+
+* Loads CSV files into PostgreSQL
+* Applies cleaning and validation
+* Runs once and exits successfully
+
+### 3. FastAPI Service
+
+* Exposes REST endpoints
+* Connects to PostgreSQL using SQLAlchemy
+* Provides Swagger UI for API exploration
+
+---
+
+## Folder Structure
+
 ```
+DMQL_Phase_1/
+├── docker-compose.yml
+├── README.md
+├── schema.sql
+├── data_ingestion_pipeline_phase1_DMQL.py
+├── Data_sets/
+│   ├── Customers.csv
+│   ├── Orders.csv
+│   ├── OrderItems.csv
+│   ├── Products.csv
+│   └── Payments.csv
+└── api/
+    └── main.py
+```
+
+---
+
+## Running the Project with Docker
+
+### 1. Start the Entire Pipeline
+
+Run the following command from the project root:
+
+```bash
+docker compose up --build
+```
+
+This command will:
+
+* Start PostgreSQL
+* Initialize the database schema
+* Automatically ingest all CSV data
+* Launch the FastAPI application
+
+No manual database setup or script execution is required.
+
+---
+
+### 2. Verify Containers Are Running
+
+```bash
+docker ps
+```
+
+You should see:
+
+* `ecommerce_postgres`
+* `ecommerce_ingest` (completed)
+* `dmql_api`
+
+---
+
+## Accessing the API
+
+Once Docker Compose is running, access the API using:
+
+* **Swagger UI:**
+  [http://localhost:8000/docs](http://localhost:8000/docs)
+
+* **OpenAPI JSON:**
+  [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
+
+* **Health Check:**
+  [http://localhost:8000/](http://localhost:8000/)
+
+---
+
+## Implemented API Endpoints
+
+### GET Endpoints
+
+* `/stats/order-status`
+  Returns order counts grouped by order status
+
+* `/customers`
+  Lists customers (supports `limit` query parameter)
+
+* `/customers/{customer_id}`
+  Retrieves a specific customer by ID
+
+* `/notes`
+  Lists notes created through the API
+
+### POST Endpoint
+
+* `/notes`
+  Inserts a new note into the database to demonstrate safe data modification
+
+---
+
+## Data Ingestion Pipeline
+
+The ingestion pipeline:
+
+* Reads CSV files from `Data_sets/`
+* Removes duplicate primary keys
+* Validates timestamps and numeric values
+* Ensures foreign key integrity
+* Loads data in a safe dependency order
+
+The pipeline is **automatically triggered** by Docker Compose.
+
+---
 
 ## Database Schema
 
-The schema contains **five normalized tables**, all in **3NF**:
+The schema contains **fully normalized tables (3NF)**:
 
 * `customers`
 * `sellers`
@@ -44,146 +184,91 @@ Each table includes:
 * Primary keys
 * Foreign keys
 * NOT NULL constraints
-* Data-type checks
-* Value checks (positive numbers, valid categories, etc.)
+* Data-type validation
+* Value constraints
 
-The schema is automatically executed when the PostgreSQL Docker container starts.
-
----
-
-##  Running the Project with Docker
-
-### **1. Start the PostgreSQL Database**
-
-Run this command inside the project folder:
-
-```bash
-docker compose up -d
-```
-
-This will:
-
-* Pull the PostgreSQL image
-* Create a container named `ecommerce_postgres`
-* Create a volume for persistent storage
-* Auto-execute `schema.sql` to build tables
-
-### **2. Verify the Database is Running**
-
-```bash
-docker ps
-```
-
-You should see a running container:
-`ecommerce_postgres`
-
-### **3. Connect to the Database**
-
-```bash
-docker exec -it ecommerce_postgres psql -U postgres -d ecommerce_db
-```
-
-Example check:
-
-```sql
-SELECT COUNT(*) FROM customers;
-```
-
+The schema is executed automatically when PostgreSQL starts.
 
 ---
 
-## Running the Python Ingestion Script
+## Screenshots
 
-Run:
+Screenshots demonstrating:
 
-```bash
-python data_ingestion_pipeline_phase1_DMQL.py
-```
+* Docker Compose execution
+* Swagger UI
+* Successful GET and POST API responses
 
-Script features:
+(Attached below)
 
-* Loads all CSV files
-* Removes duplicates
-* Cleans NaNs / bad values
-* Inserts into PostgreSQL with `SQLAlchemy`
-* Prints logs for each table
+<!-- Screenshots intentionally preserved as provided -->
 
-Example output:
+````
 
-```
-customers loaded
-sellers loaded
-products loaded
-orders loaded
-order_items loaded
-payments loaded
-Data ingestion completed successfully.
-```
-<img width="951" height="338" alt="image" src="https://github.com/user-attachments/assets/e2a887c2-0957-4bd4-aec2-5e1c2ba183d8" />
-<img width="961" height="862" alt="image" src="https://github.com/user-attachments/assets/4f418344-143f-4bb6-97a8-ca31af4531f1" />
+ **Leave your screenshots exactly below this section**, just like in Phase 1.
 
 ---
 
-##  ERD (Entity-Relationship Diagram)
+```md
+---
 
-Your ERD illustrates:
+## Demo Video
 
-* 3NF design
-* Primary and foreign key relationships
-* One-to-many connections between orders, items, sellers, and products
-<img width="2025" height="1946" alt="mermaid-ai-diagram-2025-11-19-022538 1" src="https://github.com/user-attachments/assets/590f2e27-1d0f-44c3-8637-d0ecd4bbaa50" />
+A short demo video showing:
+- Docker Compose execution
+- Swagger UI access
+- API endpoint execution
 
+Demo video link: (to be added)
 
 ---
 
-##  3NF Justification Summary
+## Technologies Used
 
-Each table is in **Third Normal Form** because:
-
-1. **No duplicate fields** or repeating groups
-2. **All non-key attributes depend completely** on their table's primary key
-3. **No transitive dependencies**
-4. Composite keys (like in `order_items`) uniquely identify each row
-
-This avoids redundancy and supports scalable analytics.
-
----
-
-##  Technologies Used
-
-* **Python 3.10+**
-
-  * pandas
-  * SQLAlchemy
-  * psycopg2
-* **PostgreSQL 15**
-* **Docker & Docker Compose**
-* **ERD Tools** (Mermaid / Draw.io)
-* **OlistPublic Dataset**
+- **Python 3.11**
+  - pandas
+  - SQLAlchemy
+  - psycopg2
+  - FastAPI
+- **PostgreSQL 15**
+- **Docker & Docker Compose**
+- **Swagger / OpenAPI**
 
 ---
 
-##  How to Reproduce the Whole Pipeline
+## How to Reproduce the Entire Pipeline
 
 1. Clone the repository
-2. Put your CSV files inside `Data_sets/`
-3. Run: `docker compose up -d`
-4. Run: `python data_ingestion_pipeline_phase1_DMQL.py`
-5. Connect to DB and validate counts
-6. Done 
+2. Ensure Docker is running
+3. Navigate to the project root
+4. Run:
+
+```bash
+docker compose up --build
+````
+
+5. Open Swagger UI and test endpoints
+6. Done
 
 ---
 
-##  Deliverables Included
+## Deliverables Included
 
-*  ERD
-*  3NF justification document
-*  SQL schema
-*  Python ingestion script
-*  docker-compose.yml
-*  Working PostgreSQL database
-*  All CSV processing code
-*  README.md
+* Dockerized PostgreSQL database
+* Automated data ingestion pipeline
+* REST API built with FastAPI
+* Swagger documentation
+* SQL schema
+* ER diagram
+* CSV processing code
+* README.md
+
+```
+
+
+
+
+
 
 
 
