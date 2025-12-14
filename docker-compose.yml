@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: ecommerce_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ecommerce_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ingest:
+    image: python:3.11-slim
+    container_name: ecommerce_ingest
+    working_dir: /app
+    volumes:
+      - ./:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+      pip install --no-cache-dir pandas sqlalchemy psycopg2-binary &&
+      python data_ingestion_pipeline_phase1_DMQL.py
+      "
+    restart: "no"
+
+  api:
+    image: python:3.11-slim
+    container_name: dmql_api
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/ecommerce_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ingest:
+        condition: service_completed_successfully
+    command: >
+      sh -c "
+      pip install --no-cache-dir fastapi uvicorn sqlalchemy psycopg2-binary &&
+      uvicorn main:app --host 0.0.0.0 --port 8000
+      "
+    restart: always
+
+volumes:
+  postgres_data:
