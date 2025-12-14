@@ -1,12 +1,17 @@
- ````md
-# DMQL Phase 3 – Application Layer (REST API)
+# DMQL Project – End-to-End Data Engineering and Application Pipeline
 
-A complete **Application Layer implementation** built for **Phase 3 of the DMQL project**.
-This repository extends the Phase 1 data engineering pipeline by exposing the
-PostgreSQL OLTP database through a **RESTful API built with FastAPI**.
-The entire system is fully automated and runs using **Docker Compose**.
+A complete **end-to-end data engineering and application pipeline** built for the **DMQL course**, covering **Phase 1 (Data Modeling & Ingestion)**, **Phase 2 (Querying & Optimization)**, and **Phase 3 (Application Layer – REST API)**.
 
----
+This repository demonstrates the full lifecycle of a data system:
+- Designing a normalized OLTP database schema
+- Ingesting and cleaning raw e-commerce data
+- Writing and optimizing SQL queries
+- Exposing the data through a **RESTful API built with FastAPI**
+
+The entire system is **fully automated**, containerized using **Docker Compose**, and can be executed using a **single command**.
+
+
+
 
 ## Project Overview
 
